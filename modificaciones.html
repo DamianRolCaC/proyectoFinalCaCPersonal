@@ -11,7 +11,7 @@
 
 <body>
     <header>
-        <nav class="navbar-index">
+        <nav class="navbar-index ">
             <img class="logo-nav" src="./static/imagenes/logos-nav.webp" alt="logo agencia de aprendizaje">
         </nav>
     </header>
@@ -23,7 +23,7 @@
 
     <!-- Contenedor principal que será controlado por JavaScript. Este contenedor tendrá dos formularios. -->
     <div id="app">
-        <!-- Primer formulario: Selector de producto. Llama a la función obtenerProducto cuando se envíe el formulario -->
+        <!-- Primer formulario: Selector de producto. LLama a la función obtenerProducto cuando se envíe el formulario -->
         <form id="form-obtener-producto">
             <label for="codigo">Código:</label>
             <input type="text" id="codigo" required><br>
@@ -44,7 +44,14 @@
                 <input type="number" step="0.01" id="precioModificar" required><br>
 
                 <!-- Imagen actual del producto -->
-                <img id="imagen-actual" style="max-width: 200px; display: none;">
+                <!-- <img id="imagen-actual" style="max-width: 200px; display: none;"> -->
+                
+                <!-- Al subir al servidor, deberá utilizarse la siguiente ruta. USUARIO debe ser reemplazado por el nombre de usuario de Pythonanywhere -->
+                <img v-if="imagen_url && !imagenSeleccionada" :src="'https://www.pythonanywhere.com/user/damrol/files/home/USUARIO/mysite/static/imagenes/' + imagen_url"
+                    alt="Imagen del producto" style="max-width: 200px;">
+
+                    
+                             
 
                 <!-- Vista previa de la nueva imagen seleccionada -->
                 <img id="imagen-vista-previa" style="max-width: 200px; display: none;">
@@ -64,7 +71,10 @@
     </div>
 
     <script>
-        const URL = "https://damrol.pythonanywhere.com/";
+        //const URL = "http://127.0.0.1:5000/"
+
+        //Al subir al servidor, deberá utilizarse la siguiente ruta. USUARIO debe ser reemplazado por el nombre de usuario de Pythonanywhere
+        const URL = "https://damrol.pythonanywhere.com/"
 
         // Variables de estado para controlar la visibilidad y los datos del formulario
         let codigo = '';
@@ -77,34 +87,20 @@
         let imagenUrlTemp = null;
         let mostrarDatosProducto = false;
 
-        // Añadido: Seleccionar formularios y inputs
-        const formObtenerProducto = document.getElementById('form-obtener-producto');
-        const formGuardarCambios = document.getElementById('form-guardar-cambios');
-        const inputCodigo = document.getElementById('codigo');
-        const inputDescripcionModificar = document.getElementById('descripcionModificar');
-        const inputCantidadModificar = document.getElementById('cantidadModificar');
-        const inputPrecioModificar = document.getElementById('precioModificar');
-        const inputProveModificar = document.getElementById('proveModificar');
-        const inputNuevaImagen = document.getElementById('nuevaImagen');
-        const imgActual = document.getElementById('imagen-actual');
-        const imgVistaPrevia = document.getElementById('imagen-vista-previa');
-        const divDatosProducto = document.getElementById('datos-producto');
+        document.getElementById('form-obtener-producto').addEventListener('submit', obtenerProducto);
+        document.getElementById('form-guardar-cambios').addEventListener('submit', guardarCambios);
+        document.getElementById('nuevaImagen').addEventListener('change', seleccionarImagen);
 
-        // Añadido: Agregar escuchadores de eventos
-        formObtenerProducto.addEventListener('submit', obtenerProducto);
-        formGuardarCambios.addEventListener('submit', guardarCambios);
-        inputNuevaImagen.addEventListener('change', seleccionarImagen);
-
-        // Función para obtener el producto por código
+        // Se ejecuta cuando se envía el formulario de consulta. Realiza una solicitud GET a la API y obtiene los datos del producto correspondiente al código ingresado.
         function obtenerProducto(event) {
             event.preventDefault();
-            codigo = inputCodigo.value;
+            codigo = document.getElementById('codigo').value;
             fetch(URL + 'productos/' + codigo)
                 .then(response => {
                     if (response.ok) {
-                        return response.json();
+                        return response.json()
                     } else {
-                        throw new Error('Error al obtener los datos del producto.');
+                        throw new Error('Error al obtener los datos del producto.')
                     }
                 })
                 .then(data => {
@@ -113,57 +109,62 @@
                     precio = data.precio;
                     proveedor = data.proveedor;
                     imagen_url = data.imagen_url;
-                    mostrarDatosProducto = true; // Activa la vista del segundo formulario
+                    mostrarDatosProducto = true; //Activa la vista del segundo formulario
                     mostrarFormulario();
                 })
                 .catch(error => {
                     alert('Código no encontrado.');
-                    console.error('Error:', error);
                 });
         }
 
-        // Función para mostrar el formulario con los datos del producto
+        // Muestra el formulario con los datos del producto
         function mostrarFormulario() {
             if (mostrarDatosProducto) {
-                inputDescripcionModificar.value = descripcion;
-                inputCantidadModificar.value = cantidad;
-                inputPrecioModificar.value = precio;
-                inputProveModificar.value = proveedor;
+                document.getElementById('descripcionModificar').value = descripcion;
+                document.getElementById('cantidadModificar').value = cantidad;
+                document.getElementById('precioModificar').value = precio;
+                document.getElementById('proveModificar').value = proveedor;
 
-                if (imagen_url && !imagenSeleccionada) {
-                    imgActual.src = 'https://www.pythonanywhere.com/user/damrol/files/home/damrol/mysite/static/imagenes/' + imagen_url;
-                    imgActual.style.display = 'block';
+                const imagenActual = document.getElementById('imagen-actual');
+                if (imagen_url && !imagenSeleccionada) { // Verifica si imagen_url no está vacía y no se ha seleccionado una imagen
+                    
+                    //imagenActual.src = './static/imagenes/' + imagen_url;
+                    
+                    imagenActual.src = 'https://www.pythonanywhere.com/user/damrol/files/home/damrol/mysite/static/imagenes/' + imagen_url;
+                    imagenActual.style.display = 'block'; // Muestra la imagen actual
                 } else {
-                    imgActual.style.display = 'none';
+                    imagenActual.style.display = 'none'; // Oculta la imagen si no hay URL
                 }
 
-                divDatosProducto.style.display = 'block';
+                document.getElementById('datos-producto').style.display = 'block';
             } else {
-                divDatosProducto.style.display = 'none';
+                document.getElementById('datos-producto').style.display = 'none';
             }
         }
 
-        // Función para seleccionar una nueva imagen
+        // Se activa cuando el usuario selecciona una imagen para cargar.
         function seleccionarImagen(event) {
             const file = event.target.files[0];
             imagenSeleccionada = file;
-            imagenUrlTemp = URL.createObjectURL(file);
+            imagenUrlTemp = URL.createObjectURL(file); // Crea una URL temporal para la vista previa
 
-            imgVistaPrevia.src = imagenUrlTemp;
-            imgVistaPrevia.style.display = 'block';
+            const imagenVistaPrevia = document.getElementById('imagen-vista-previa');
+            imagenVistaPrevia.src = imagenUrlTemp;
+            imagenVistaPrevia.style.display = 'block';
         }
 
-        // Función para guardar los cambios del producto
+        // Se usa para enviar los datos modificados del producto al servidor.
         function guardarCambios(event) {
             event.preventDefault();
 
             const formData = new FormData();
             formData.append('codigo', codigo);
-            formData.append('descripcion', inputDescripcionModificar.value);
-            formData.append('cantidad', inputCantidadModificar.value);
-            formData.append('proveedor', inputProveModificar.value);
-            formData.append('precio', inputPrecioModificar.value);
+            formData.append('descripcion', document.getElementById('descripcionModificar').value);
+            formData.append('cantidad', document.getElementById('cantidadModificar').value);
+            formData.append('proveedor', document.getElementById('proveModificar').value);
+            formData.append('precio', document.getElementById('precioModificar').value);
 
+            // Si se ha seleccionado una imagen nueva, la añade al formData. 
             if (imagenSeleccionada) {
                 formData.append('imagen', imagenSeleccionada, imagenSeleccionada.name);
             }
@@ -174,9 +175,9 @@
             })
                 .then(response => {
                     if (response.ok) {
-                        return response.json();
+                        return response.json()
                     } else {
-                        throw new Error('Error al guardar los cambios del producto.');
+                        throw new Error('Error al guardar los cambios del producto.')
                     }
                 })
                 .then(data => {
@@ -189,17 +190,20 @@
                 });
         }
 
-        // Función para limpiar el formulario
+        // Restablece todas las variables relacionadas con el formulario a sus valores iniciales, lo que efectivamente "limpia" el formulario.
         function limpiarFormulario() {
-            inputCodigo.value = '';
-            inputDescripcionModificar.value = '';
-            inputCantidadModificar.value = '';
-            inputPrecioModificar.value = '';
-            inputProveModificar.value = '';
-            inputNuevaImagen.value = '';
+            document.getElementById('codigo').value = '';
+            document.getElementById('descripcionModificar').value = '';
+            document.getElementById('cantidadModificar').value = '';
+            document.getElementById('precioModificar').value = '';
+            document.getElementById('proveModificar').value = '';
+            document.getElementById('nuevaImagen').value = '';
 
-            imgActual.style.display = 'none';
-            imgVistaPrevia.style.display = 'none';
+            const imagenActual = document.getElementById('imagen-actual');
+            imagenActual.style.display = 'none';
+
+            const imagenVistaPrevia = document.getElementById('imagen-vista-previa');
+            imagenVistaPrevia.style.display = 'none';
 
             codigo = '';
             descripcion = '';
@@ -211,9 +215,8 @@
             imagenUrlTemp = null;
             mostrarDatosProducto = false;
 
-            divDatosProducto.style.display = 'none';
+            document.getElementById('datos-producto').style.display = 'none';
         }
     </script>
 </body>
-
 </html>
