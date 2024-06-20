@@ -68,7 +68,7 @@ class Catalogo:
 
         self.cursor.execute(sql, valores)        
         self.conn.commit()
-        return self.cursor.lastrowid
+        return self.cursor.lastrowid #proporciona el valor de la clave primaria generada automáticamente por la base de datos para la fila recién insertada.
 
     #----------------------------------------------------------------
     def consultar_producto(self, codigo):
